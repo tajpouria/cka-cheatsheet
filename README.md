@@ -45,3 +45,33 @@
 - Use Helm and Kustomize to install cluster components
 - Understand extension interfaces (CNI, CSI, CRI, etc.)
 - Understand CRDs, install and configure operators
+
+upgrade kubeadm k8s
+
+```
+export version=1.31
+export partial_version=1.31.0
+export complete_version="${version}.0-1.1"
+
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${version}/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+apt-mark unhold kubeadm && \
+apt-get update && apt-get install -y kubeadm="${complete_version}" && \
+apt-mark hold kubeadm
+
+kubeadm upgrade apply "${partial_version}"
+
+kubeadm upgrade node "${partial_version}"
+
+apt-mark unhold kubelet kubectl && \
+apt-get update && apt-get install -y kubelet="${complete_version}" kubectl="${complete_version}" && \
+apt-mark hold kubelet kubectl
+
+apt-mark unhold kubelet && \
+apt-get update && apt-get install -y kubelet="${complete_version}" && \
+apt-mark hold kubelet
+
+systemctl daemon-reload
+systemctl restart kubelet
+
+```
